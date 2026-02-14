@@ -40,9 +40,21 @@ keymap.set('n', '<S-Tab>', ':bprevious <Return>', extend_opts({ desc = 'Previous
 keymap.set('n', 'tq', ':bdelete <Return>', extend_opts({ desc = 'Delete buffer' }))
 keymap.set('n', '<leader><leader>', ':b# <Return>', extend_opts({ desc = 'Switch to last edited buffer' }))
 
+keymap.set('n', 'tc', ':close <Return>', extend_opts({ desc = 'Close current pane' }))
+
 -- Split window
 keymap.set('n', 'ss', ':split<Return><C-w>w', opts)
 keymap.set('n', 'sv', ':vsplit<Return><C-w>w', opts)
 
 -- Clear search with <esc>
 keymap.set({ 'i', 'n' }, '<esc>', '<cmd>noh<cr><esc>', extend_opts({ desc = 'Escape and Clear hlsearch' }))
+
+-- Git
+keymap.set(
+    'n',
+    '<leader>gd',
+    ':args `git ls-files -m -o --exclude-standard` <Return>',
+    extend_opts({ desc = 'Add untracked/modifiled files to argument list' })
+)
+keymap.set('n', '<leader>ga', ':!git add % <Return>', extend_opts({ desc = 'Stage current file' }))
+keymap.set('n', '<leader>gr', ':!git restore --staged % <Return>', extend_opts({ desc = 'Unstage current file' }))

@@ -16,7 +16,7 @@ return {
                 gomod = { 'gofumpt', 'goimports' },
                 gowork = { 'gofumpt', 'goimports' },
                 gotmpl = { 'gofumpt', 'goimports' },
-                proto = { 'buf' }
+                proto = { 'buf' },
             },
             format_on_save = {
                 lsp_fallback = true,

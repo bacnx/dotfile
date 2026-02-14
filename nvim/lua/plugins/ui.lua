@@ -6,33 +6,29 @@ return {
             'folke/noice.nvim',
         },
         config = function()
-            -- hide default tab bar and use lualine tabs instead
-            vim.opt.showtabline = 0
+            local theme = require('lualine.themes.auto')
+            local muted_fg = '#7a7f8b'
+            local muted_bg = theme.normal.c.bg
+
+            for _, mode in ipairs({ 'normal', 'insert', 'visual', 'replace', 'command', 'inactive' }) do
+                if theme[mode] and theme[mode].c then
+                    theme[mode].c = vim.tbl_extend('force', theme[mode].c, { fg = muted_fg, bg = muted_bg })
+                end
+            end
 
             require('lualine').setup({
                 options = {
                     icons_enabled = true,
-                    theme = 'auto',
+                    theme = theme,
                     component_separators = '',
-                    section_separators = { left = '', right = '' },
                 },
                 sections = {
-                    lualine_a = {
-                        { 'mode', separator = { left = '' }, right_padding = 2 },
+                    lualine_a = {},
+                    lualine_b = {},
+                    lualine_c = {
+                        'mode',
+                        'branch',
                     },
-                    lualine_b = {
-                        {
-                            'branch',
-                            fmt = function(str)
-                                if vim.api.nvim_strwidth(str) > 20 then
-                                    return ('%s..'):format(str:sub(1, 19))
-                                end
-                                return str
-                            end,
-                        },
-                        { 'diff' },
-                    },
-                    lualine_c = { 'windows' },
 
                     lualine_x = {
                         'diagnostics',
@@ -44,11 +40,29 @@ return {
                             require('noice').api.status.search.get,
                             cond = require('noice').api.status.search.has,
                         },
+                        'lsp_status',
+                        'encoding',
+                        'progress',
+                        'location',
                     },
-                    lualine_y = { 'progress' },
-                    lualine_z = {
-                        { 'location', separator = { right = '' }, left_padding = 2 },
+                    lualine_y = {},
+                    lualine_z = {},
+                },
+                winbar = {
+                    lualine_c = {
+                        { 'filetype', icon_only = true },
+                        { 'filename', path = 1 },
+                        'diff',
                     },
+                    lualine_x = {},
+                },
+                inactive_winbar = {
+                    lualine_c = {
+                        { 'filetype', icon_only = true },
+                        { 'filename', path = 1 },
+                        'diff',
+                    },
+                    lualine_x = {},
                 },
             })
         end,

@@ -14,12 +14,12 @@ return {
             },
         },
         config = function(_, opts)
-            local lspconfig = require('lspconfig')
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
             for lsp, config in pairs(opts.servers) do
                 local lsp_config = vim.tbl_deep_extend('force', { capabilities = capabilities }, config)
-                lspconfig[lsp].setup(lsp_config)
+                vim.lsp.enable(lsp)
+                vim.lsp.config(lsp, lsp_config)
             end
         end,
         opts = {
@@ -38,18 +38,18 @@ return {
                 },
                 ts_ls = {},
                 gopls = {
-                    cmd = { 'gopls' },
-                    filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
-                    root_dir = require('lspconfig.util').root_pattern('go.work', 'gomod', '.git'),
-                    settings = {
-                        gopls = {
-                            completeUnimported = true,
-                            semanticTokens = true,
-                            analyses = {
-                                unusedparams = true,
-                            },
-                        },
-                    },
+                    -- cmd = { 'gopls' },
+                    -- filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+                    -- root_dir = require('lspconfig.util').root_pattern('go.work', 'gomod', '.git'),
+                    -- settings = {
+                    --     gopls = {
+                    --         completeUnimported = true,
+                    --         semanticTokens = true,
+                    --         analyses = {
+                    --             unusedparams = true,
+                    --         },
+                    --     },
+                    -- },
                 },
                 cssls = {},
                 emmet_ls = {},

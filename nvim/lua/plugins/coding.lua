@@ -80,6 +80,9 @@ return {
             ui = {
                 code_action = '',
             },
+            symbol_in_winbar = {
+                enable = false,
+            },
         },
         keys = {
             { 'K', '<CMD>Lspsaga hover_doc<CR>' },
