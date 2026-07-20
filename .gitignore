@@ -1,0 +1,2 @@
+# TPM clones plugins into ~/.config/tmux/plugins, which is symlinked into this repo
+tmux/plugins/
