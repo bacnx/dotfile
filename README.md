@@ -34,7 +34,11 @@ ln -s $PWD/lazygit ~/.config/lazygit
 ```
 
 
-### [Neovim (v0.10)](https://neovim.io/)
+### [Neovim (v0.12+)](https://neovim.io/)
+
+Plugins are managed by the builtin `vim.pack` (requires v0.12), pinned in
+`nvim/nvim-pack-lock.json`. No plugin-manager bootstrap needed.
+
 
 - [lazygit](https://github.com/jesseduffield/lazygit?tab=readme-ov-file#installation)
 - [ripgrep](https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation)
