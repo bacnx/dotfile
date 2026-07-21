@@ -38,6 +38,11 @@ ln -s $PWD/nvim ~/.config/nvim
 ```sh
 ln -s $PWD/lazygit ~/.config/lazygit
 ```
+```sh
+# herdr writes logs/sockets/session state into ~/.config/herdr, so symlink
+# only the config file, not the whole directory.
+ln -s $PWD/herdr/config.toml ~/.config/herdr/config.toml
+```
 
 
 ### [Neovim (v0.12+)](https://neovim.io/)

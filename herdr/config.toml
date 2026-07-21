@@ -1,0 +1,38 @@
+# herdr configuration — migrated from tmux/tmux.conf
+# Place at ~/.config/herdr/config.toml
+
+[theme]
+name = "catppuccin"
+
+[keys]
+# Match the old tmux prefix (C-s).
+prefix = "ctrl+s"
+
+# tmux prefix+r reloaded the config; herdr uses prefix+r for resize_mode,
+# so reload moves to prefix+shift+r (herdr default).
+reload_config = "prefix+shift+r"
+
+# Pane focus: ctrl+<arrows> direct, plus prefix+hjkl kept as backup.
+# Bare ctrl+hjkl is intentionally NOT bound — those stay free for nvim splits,
+# since herdr has no vim-tmux-navigator-style conditional passthrough.
+focus_pane_left  = ["prefix+h", "ctrl+left"]
+focus_pane_down  = ["prefix+j", "ctrl+down"]
+focus_pane_up    = ["prefix+k", "ctrl+up"]
+focus_pane_right = ["prefix+l", "ctrl+right"]
+
+# Splits: prefix+v = side-by-side (matches tmux 'v').
+# split-below stays on herdr's default prefix+minus (tmux used 's', but that
+# would clobber herdr's 'settings' on prefix+s).
+split_vertical   = "prefix+v"
+split_horizontal = "prefix+minus"
+
+# New tab in the current dir (tmux 'c').
+new_tab = "prefix+c"
+
+# lazygit popup — replaces the tmux/nvim lazygit workflow.
+[[keys.command]]
+key = "prefix+g"
+type = "popup"
+command = "lazygit"
+width = "90%"
+height = "90%"
