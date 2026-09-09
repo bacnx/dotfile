@@ -1,0 +1,75 @@
+#!/bin/sh
+# One clipboard interface, shared by .zshrc, Neovim and tmux so the backend is
+# chosen in exactly one place.
+#
+#   clip -i    stdin     -> clipboard
+#   clip -o    clipboard -> stdout
+#
+# Backend order matches .zshrc: WSL first (on WSL you want the *Windows*
+# clipboard, so this deliberately wins over the WSLg Wayland socket), then
+# Wayland, then X11.
+
+is_wsl() {
+    [ -n "$WSL_DISTRO_NAME" ] || grep -qi microsoft /proc/version 2>/dev/null
+}
+has() { command -v "$1" >/dev/null 2>&1; }
+
+# Windows wants CRLF. Only needed for the clip.exe fallback — win32yank does the
+# conversion itself. perl -p leaves a final unterminated line alone, which
+# `sed 's/$/\r/'` would not.
+to_crlf() {
+    if has perl; then perl -pe 's/\n/\r\n/'
+    else cat
+    fi
+}
+
+copy() {
+    if is_wsl && has win32yank.exe; then
+        # clip.exe writes ~6x faster (31ms vs 189ms measured) but encodes stdin in
+        # the console codepage, so anything non-ASCII lands in the Windows
+        # clipboard as mojibake — "chào" pastes as "ch├áo". win32yank writes real
+        # Unicode, so it wins on correctness. clip.exe stays as an ASCII-safe
+        # fallback for machines without win32yank.
+        win32yank.exe -i --crlf
+    elif is_wsl && has clip.exe; then
+        to_crlf | clip.exe
+    elif [ -n "$WAYLAND_DISPLAY" ] && has wl-copy; then
+        wl-copy
+    elif has xclip; then
+        xclip -selection clipboard -in
+    elif has xsel; then
+        xsel --clipboard --input
+    else
+        cat >/dev/null    # no bridge: swallow rather than error
+    fi
+}
+
+paste() {
+    if is_wsl && has win32yank.exe; then
+        # win32yank also beats powershell here (94ms vs 166ms), and Get-Clipboard
+        # mangles non-ASCII on the way out, so it is only a last resort.
+        win32yank.exe -o --lf
+    elif is_wsl && has powershell.exe; then
+        powershell.exe -NoProfile Get-Clipboard 2>/dev/null | tr -d '\r'
+    elif [ -n "$WAYLAND_DISPLAY" ] && has wl-paste; then
+        wl-paste --no-newline
+    elif has xclip; then
+        xclip -selection clipboard -out
+    elif has xsel; then
+        xsel --clipboard --output
+    fi
+}
+
+case "$1" in
+    -i|--copy)  copy ;;
+    -o|--paste) paste ;;
+    # Bare `something | clip` keeps working: no argument plus a piped stdin means
+    # copy. Typed on its own at a prompt, stdin is a tty and this prints usage.
+    "") if [ -t 0 ]; then
+            printf 'usage: %s -i | -o    (or: cmd | %s)\n' "${0##*/}" "${0##*/}" >&2
+            exit 2
+        else
+            copy
+        fi ;;
+    *) printf 'usage: %s -i | -o\n' "${0##*/}" >&2; exit 2 ;;
+esac

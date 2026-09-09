@@ -1,0 +1,32 @@
+# Copy to ~/.zshrc.local (and ~/.zshrc.local.pre) for anything that belongs to one
+# machine rather than to this repo: employer settings, hardcoded paths, blocks that
+# package installers append to ~/.zshrc. Neither file is tracked here.
+#
+# .zshrc is sourced in this order:
+#
+#   platform detection
+#   ~/.zshrc.local.pre        <- runs BEFORE everything below
+#   history, options, clipboard, vi mode
+#   PATH
+#   aliases, tools, prompt, plugins   <- these feature-detect with $+commands[...]
+#   compinit
+#   ~/.zshrc.local            <- runs LAST, so it overrides
+#
+# Which file to use follows from that:
+#
+#   .zshrc.local.pre   PATH entries the detection has to see, fpath additions
+#                      (compinit runs after this), plugin config variables, and
+#                      any new ZLE widget — the plugins loaded later wrap only
+#                      widgets that already exist.
+#
+#   .zshrc.local       everything else: overriding an alias, an exported
+#                      variable, or a function such as _clip_copy; work-only
+#                      settings; per-machine scripts.
+
+# ---- example ~/.zshrc.local.pre ----
+# export PATH="$HOME/.some-tool/bin:$PATH"
+# fpath=("$HOME/.some-tool/completions/zsh" $fpath)
+
+# ---- example ~/.zshrc.local ----
+# export GOPRIVATE='gitlab.example.com/*'
+# alias v="nvim --clean"

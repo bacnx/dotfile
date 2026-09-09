@@ -6,16 +6,15 @@
 ## Requirements
 
 - [Nerd Font (v3)](https://www.nerdfonts.com/)
-- [win32yank](https://github.com/equalsraf/win32yank): for Tmux and Neovim to copy
-  directly to the Windows clipboard under WSL2. Both configs use it, so the system
-  clipboard behaves the same in either.
+- [win32yank](https://github.com/equalsraf/win32yank): the WSL2 clipboard bridge.
+  Zsh, Neovim and tmux all reach it through `bin/clip`, so it is configured once.
 ```sh
 curl -sLo /tmp/win32yank.zip https://github.com/equalsraf/win32yank/releases/latest/download/win32yank-x64.zip
 unzip -p /tmp/win32yank.zip win32yank.exe | sudo tee /usr/local/bin/win32yank.exe > /dev/null
 sudo chmod +x /usr/local/bin/win32yank.exe
 ```
-> On a native X11/Wayland Linux box use `xclip`/`wl-clipboard` instead and change the
-> `copy-pipe-and-cancel` command in `tmux/tmux.conf` to match.
+> On a native X11/Wayland Linux box install `wl-clipboard` or `xclip` instead —
+> `bin/clip` detects them and nothing else needs changing.
 
 ## Install
 
@@ -24,7 +23,7 @@ sudo chmod +x /usr/local/bin/win32yank.exe
 ln -s $PWD/.zshrc ~/.zshrc
 ```
 ```sh
-ln -s $PWD/.p10k.zsh ~/.p10k.zsh
+ln -s $PWD/.zshenv ~/.zshenv
 ```
 ```sh
 ln -s $PWD/tmux ~/.config/tmux
@@ -34,6 +33,9 @@ ln -s $PWD/.czrc ~/.czrc
 ```
 ```sh
 ln -s $PWD/nvim ~/.config/nvim
+```
+```sh
+mkdir -p ~/.local/bin && ln -s $PWD/bin/clip ~/.local/bin/clip
 ```
 ```sh
 ln -s $PWD/lazygit ~/.config/lazygit
@@ -53,13 +55,51 @@ Plugins are managed by the builtin `vim.pack` (requires v0.12), pinned in
 
 - [lazygit](https://github.com/jesseduffield/lazygit?tab=readme-ov-file#installation)
 - [ripgrep](https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation)
+- [fd](https://github.com/sharkdp/fd#installation) — Debian and Ubuntu install it as
+  `fdfind`, which tools that shell out to `fd` (Telescope, for one) never find. A
+  symlink fixes it for every process, where an alias would only work when typed:
+```sh
+ln -s "$(command -v fdfind)" ~/.local/bin/fd
+```
 
-### [Oh My Zsh](https://ohmyz.sh/#install)
+### Zsh
 
-- [zsh](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
-- [powerlevel10k](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#oh-my-zsh)
-- [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md#oh-my-zsh)
-- [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md#oh-my-zsh)
+No framework — `.zshrc` is plain zsh and works on both WSL and native Linux. It
+feature-detects everything, so a missing tool degrades instead of erroring.
+
+- [zsh](https://www.zsh.org/)
+- [starship](https://starship.rs/guide/#step-1-install-starship) — prompt
+- [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md)
+- [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
+- [zoxide](https://github.com/ajeetdsouza/zoxide#installation) — `cd` replacement
+
+The two plugins are sourced from system paths; both the Debian
+(`/usr/share/zsh-*/`) and Arch (`/usr/share/zsh/plugins/zsh-*/`) layouts are
+probed, so distro packages are enough:
+
+```sh
+# Debian/Ubuntu
+sudo apt install zsh-autosuggestions zsh-syntax-highlighting eza zoxide
+# Arch
+sudo pacman -S zsh-autosuggestions zsh-syntax-highlighting eza zoxide starship
+```
+
+**Completion** is initialised once, by `.zshrc`, after `fpath` is complete. That
+needs `.zshenv` symlinked: Debian and Ubuntu run their own `compinit` from
+`/etc/zsh/zshrc` before `~/.zshrc` is read, so completions added later never made
+it into the dump. The dump is rebuilt at most once a day.
+
+**Machine-local settings** go in `~/.zshrc.local` (sourced last, so it overrides)
+and `~/.zshrc.local.pre` (sourced early, for PATH and `fpath` the feature detection
+has to see). Neither is tracked — see `.zshrc.local.example` for which goes where.
+Keeping work-only settings and installer-appended blocks there is what lets this
+repo stay portable.
+
+**Clipboard:** vi-mode `y`/`d`/`c`/`p` sync with the system clipboard through
+`bin/clip`, the single entry point Neovim and tmux also use. It picks `win32yank`
+on WSL, else `wl-copy` on Wayland, else `xclip`/`xsel` on X11, and `cmd | clip`
+works as a standalone "copy this" command. On Arch install `wl-clipboard` or
+`xclip`.
 
 ### [Tmux](https://github.com/tmux/tmux/wiki)
 
