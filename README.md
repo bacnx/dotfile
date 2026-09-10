@@ -41,6 +41,9 @@ mkdir -p ~/.local/bin && ln -s $PWD/bin/clip ~/.local/bin/clip
 ln -s $PWD/lazygit ~/.config/lazygit
 ```
 ```sh
+ln -s $PWD/starship.toml ~/.config/starship.toml
+```
+```sh
 # herdr writes logs/sockets/session state into ~/.config/herdr, so symlink
 # only the config file, not the whole directory.
 ln -s $PWD/herdr/config.toml ~/.config/herdr/config.toml
@@ -68,7 +71,9 @@ No framework — `.zshrc` is plain zsh and works on both WSL and native Linux. I
 feature-detects everything, so a missing tool degrades instead of erroring.
 
 - [zsh](https://www.zsh.org/)
-- [starship](https://starship.rs/guide/#step-1-install-starship) — prompt
+- [starship](https://starship.rs/guide/#step-1-install-starship) — prompt; its
+  config lives in `starship.toml` here, so the prompt in the screenshots is what a
+  fresh clone gets
 - [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md)
 - [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
 - [zoxide](https://github.com/ajeetdsouza/zoxide#installation) — `cd` replacement
