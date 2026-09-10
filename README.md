@@ -38,7 +38,7 @@ ln -s $PWD/nvim ~/.config/nvim
 mkdir -p ~/.local/bin && ln -s $PWD/bin/clip ~/.local/bin/clip
 ```
 ```sh
-ln -s $PWD/lazygit ~/.config/lazygit
+mkdir -p ~/.config/lazygit && ln -s $PWD/lazygit/config.yml ~/.config/lazygit/config.yml
 ```
 ```sh
 ln -s $PWD/starship.toml ~/.config/starship.toml
