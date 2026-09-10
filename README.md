@@ -104,8 +104,11 @@ works as a standalone "copy this" command. On Arch install `wl-clipboard` or
 ### [Tmux](https://github.com/tmux/tmux/wiki)
 
 Config lives at `tmux/tmux.conf`, loaded from `~/.config/tmux/tmux.conf` (tmux 3.1+).
-Prefix is `C-s`. Pane navigation, resizing, and vim-aware pane switching are all bound to
-both `hjkl` and the arrow keys.
+Prefix is `C-s`. Pane navigation is on `prefix + hjkl`, resizing on `prefix + C-arrows`,
+and vim-aware pane switching on bare `C-arrows`, which cross the Neovim/tmux boundary
+transparently. `C-hjkl` is deliberately left unbound: it is a home-row run on QWERTY but
+four scattered keys on Colemak-DH, and claiming it at the root costs `C-l` (clear-screen)
+in the shell.
 
 Plugins are managed by [TPM](https://github.com/tmux-plugins/tpm) and used **only** for
 session persistence — the status bar and vim-tmux-navigator integration are hand-rolled in
@@ -126,6 +129,8 @@ Then start tmux and press `prefix + I` to install
   the *window*, not the session.
 - Resurrect's save key is moved off its `prefix + C-s` default, which would otherwise
   collide with `send-prefix` (the prefix is itself `C-s`).
+- `prefix + Space` opens the session picker; `prefix + w` shows the same tree with
+  windows expanded.
 - `prefix + r` reloads the config.
 
 > `~/.config/tmux` is a symlink into this repo, so the live tmux config follows whichever
