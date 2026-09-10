@@ -1,9 +1,11 @@
+onboarding = false
 # herdr configuration — migrated from tmux/tmux.conf
 # Place at ~/.config/herdr/config.toml
 
 [theme]
 name = "catppuccin"
 
+auto_switch = false
 [keys]
 # Match the old tmux prefix (C-s).
 prefix = "ctrl+s"
@@ -36,3 +38,13 @@ type = "popup"
 command = "lazygit"
 width = "90%"
 height = "90%"
+
+[ui]
+show_agent_labels_on_pane_borders = true
+
+agent_panel_sort = "spaces"
+[ui.sound]
+enabled = false
+
+[ui.toast]
+delivery = "system"
