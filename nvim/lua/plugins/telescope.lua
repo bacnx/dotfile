@@ -1,6 +1,15 @@
 require('telescope').setup({
   defaults = {
-    layout_strategy = 'horizontal',
+    -- 'flex' picks horizontal when there is room, vertical when there is not,
+    -- so a narrow tmux pane gets a preview stacked below instead of none at all.
+    layout_strategy = 'flex',
+    layout_config = {
+      -- Below this many columns, flex flips to the vertical layout.
+      flex = { flip_columns = 130 },
+      -- preview_cutoff defaults to 120 and silently hides the preview under it.
+      horizontal = { preview_width = 0.55, preview_cutoff = 0 },
+      vertical = { preview_height = 0.5, preview_cutoff = 0 },
+    },
     file_ignore_patterns = { 'node_modules/', '%.git/' },
     mappings = {
       i = {
