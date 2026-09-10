@@ -6,7 +6,11 @@ format = "$directory$git_branch$git_status$nix_shell$cmd_duration$character"
 
 [directory]
 style = "bold lavender"
-truncation_length = 1
+# At length 1 the prompt showed a bare leaf ("config"), with no marker that
+# anything had been cut -- truncation_symbol defaults to empty. 3 components plus
+# the marker keeps the repo-relative path locatable.
+truncation_length = 3
+truncation_symbol = "…/"
 
 [git_branch]
 symbol = " "
@@ -28,6 +32,11 @@ format = "[ $duration]($style) "
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
+# zsh runs in vi mode (bindkey -v). starship has no status-aware vicmd variant --
+# `vicmd_error_symbol` is rejected as an unknown key -- so normal mode cannot show
+# exit status. It must at least not render in green, which is the success colour:
+# pressing Esc after a failed command otherwise turned the red marker green.
+vicmd_symbol = "[❮](bold peach)"
 
 [palettes.catppuccin_mocha]
 rosewater = "#f5e0dc"
