@@ -118,9 +118,12 @@ Then start tmux and press `prefix + I` to install
 [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) and
 [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum).
 
-- Sessions auto-save every 15 minutes; save manually with `prefix + S`, restore with
-  `prefix + C-r`. Auto-restore is deliberately off, since the session auto-rename hooks
-  would rename sessions as they are restored.
+- Sessions auto-save every 15 minutes, scrollback included, and are restored
+  automatically when the server starts; save manually with `prefix + S`, restore with
+  `prefix + C-r`.
+- Sessions are auto-named after the current directory, but only when tmux named them
+  itself — `tmux new -s <name>` keeps the name you gave it. New windows and splits name
+  the *window*, not the session.
 - Resurrect's save key is moved off its `prefix + C-s` default, which would otherwise
   collide with `send-prefix` (the prefix is itself `C-s`).
 - `prefix + r` reloads the config.

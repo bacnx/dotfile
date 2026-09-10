@@ -19,15 +19,18 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
+-- bin/clip from this repo (symlinked to ~/.local/bin/clip) picks the backend --
+-- clip.exe / win32yank on WSL, wl-copy on Wayland, xclip or xsel on X11 -- so
+-- the choice is made in one place shared with .zshrc and tmux.
 vim.g.clipboard = {
-  name = "win32yank",
+  name = "clip",
   copy = {
-    ["+"] = "win32yank.exe -i --crlf",
-    ["*"] = "win32yank.exe -i --crlf",
+    ["+"] = "clip -i",
+    ["*"] = "clip -i",
   },
   paste = {
-    ["+"] = "win32yank.exe -o --lf",
-    ["*"] = "win32yank.exe -o --lf",
+    ["+"] = "clip -o",
+    ["*"] = "clip -o",
   },
   cache_enabled = 0,
 }
