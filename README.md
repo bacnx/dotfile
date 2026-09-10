@@ -104,11 +104,12 @@ works as a standalone "copy this" command. On Arch install `wl-clipboard` or
 ### [Tmux](https://github.com/tmux/tmux/wiki)
 
 Config lives at `tmux/tmux.conf`, loaded from `~/.config/tmux/tmux.conf` (tmux 3.1+).
-Prefix is `C-s`. Pane navigation is on `prefix + hjkl`, resizing on `prefix + C-arrows`,
+Prefix is `C-s`. Pane navigation is on `prefix + arrows`, resizing on `prefix + C-arrows`,
 and vim-aware pane switching on bare `C-arrows`, which cross the Neovim/tmux boundary
-transparently. `C-hjkl` is deliberately left unbound: it is a home-row run on QWERTY but
-four scattered keys on Colemak-DH, and claiming it at the root costs `C-l` (clear-screen)
-in the shell.
+transparently and work in copy-mode too. `hjkl` is deliberately left unbound in both
+forms: it is a home-row run on QWERTY but four scattered keys on Colemak-DH, claiming
+`C-hjkl` at the root costs `C-l` (clear-screen) in the shell, and `prefix + l` is worth
+more as tmux's own `last-window`.
 
 Plugins are managed by [TPM](https://github.com/tmux-plugins/tpm) and used **only** for
 session persistence — the status bar and vim-tmux-navigator integration are hand-rolled in
