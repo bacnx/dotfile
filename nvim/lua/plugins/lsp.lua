@@ -20,8 +20,19 @@ vim.lsp.config("gopls", {
   },
 })
 
+-- ESLint runs as a linter only. `format = true` (the lspconfig default) makes the
+-- server advertise document formatting, which would put it in competition with
+-- conform for js/ts buffers; formatting is biome's or prettier's job here.
+--
+-- No gating needed beyond this: the server's own root_dir returns nil unless it
+-- finds an .eslintrc*/eslint.config.* above the file, so eslint simply never
+-- attaches in a repo that isn't using it.
+vim.lsp.config("eslint", {
+  settings = { format = false },
+})
+
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "ts_ls", "gopls", "sqls" },
+  ensure_installed = { "lua_ls", "ts_ls", "gopls", "sqls", "eslint" },
   automatic_enable = true,
 })
 
@@ -69,5 +80,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.keymap.set("n", "gi",    builtin.lsp_implementations,  { buffer = buf, desc = "Go to implementation" })
     vim.keymap.set("n", "gr",    builtin.lsp_references,       { buffer = buf, desc = "Go to references" })
     vim.keymap.set("n", "gD",    vim.lsp.buf.declaration,      { buffer = buf, desc = "Go to declaration" })
+
+    -- LspEslintFixAll is a buffer command created by eslint's own on_attach, so
+    -- only bind it on buffers where eslint is the client that just attached.
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == "eslint" then
+      vim.keymap.set("n", "<leader>ce", "<cmd>LspEslintFixAll<cr>",
+        { buffer = buf, desc = "ESLint fix all" })
+    end
   end,
 })
