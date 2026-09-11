@@ -11,33 +11,59 @@ conform.setup({
     lua        = { 'stylua' },
     go         = { 'goimports', 'gofmt' },
     python     = { 'ruff_format', 'black', stop_after_first = true },
-    javascript = { 'biome', 'prettier', stop_after_first = true },
-    typescript = { 'biome', 'prettier', stop_after_first = true },
-    json       = { 'biome', 'prettier', stop_after_first = true },
-    css        = { 'prettier' },
-    html       = { 'prettier' },
-    markdown   = { 'prettier' },
-    yaml       = { 'prettier' },
+    -- Web filetypes: biome and prettier are both gated on the repo actually
+    -- carrying their config file (see require_cwd below), so a repo with
+    -- neither gets no formatter at all. lsp_format = 'never' keeps ts_ls from
+    -- stepping in with its own style when that happens.
+    javascript = { 'biome', 'prettier', stop_after_first = true, lsp_format = 'never' },
+    typescript = { 'biome', 'prettier', stop_after_first = true, lsp_format = 'never' },
+    json       = { 'biome', 'prettier', stop_after_first = true, lsp_format = 'never' },
+    -- .jsx / .tsx are their own filetypes, not a suffix of the two above — without
+    -- these entries they fall through to default_format_opts and ts_ls formats them.
+    javascriptreact = { 'biome', 'prettier', stop_after_first = true, lsp_format = 'never' },
+    typescriptreact = { 'biome', 'prettier', stop_after_first = true, lsp_format = 'never' },
+    css        = { 'prettier', lsp_format = 'never' },
+    html       = { 'prettier', lsp_format = 'never' },
+    markdown   = { 'prettier', lsp_format = 'never' },
+    yaml       = { 'prettier', lsp_format = 'never' },
     sh         = { 'shfmt' },
     toml       = { 'taplo' },
-    -- fallback: use LSP formatter for any filetype not listed above
-    ['_']      = { 'lsp' },
   },
 
+  -- Applies to any filetype that doesn't set lsp_format itself, including the
+  -- ones with no entry above. ('_' = { 'lsp' } does not work: conform has no
+  -- formatter named "lsp" — LSP formatting is only ever reached via this option.)
+  default_format_opts = { lsp_format = 'fallback' },
+
   -- Format on save
-  -- lsp_format = "fallback" → use LSP if no conform formatter is found for the ft
   format_on_save = function(bufnr)
     -- Disable format-on-save per buffer (set vim.b.disable_autoformat = true)
     if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
       return
     end
-    return { timeout_ms = 500, lsp_format = 'fallback' }
+    -- No lsp_format here on purpose: options set at the call site win over
+    -- the per-filetype ones, which would defeat lsp_format = 'never' above.
+    return { timeout_ms = 500 }
   end,
 
   -- Notify on error (useful while setting up new formatters)
   notify_on_error     = true,
   notify_no_formatters = false, -- too noisy for unregistered filetypes
 })
+
+-- ============================================================
+-- FORMATTER GATING
+-- ============================================================
+-- Both tools ship a `cwd` that locates the repo root by its own config file
+-- (biome.json{,c} / .biome.json{,c} for biome; .prettierrc*, prettier.config.*
+-- or a "prettier" key in package.json for prettier). require_cwd turns "no
+-- config found" into "formatter unavailable", which means:
+--   * a biome repo uses biome, a prettier repo uses prettier — stop_after_first
+--     now falls through instead of always picking biome just because Mason put
+--     it on $PATH;
+--   * a repo configured for neither is left alone on save.
+conform.formatters.biome = { require_cwd = true }
+conform.formatters.prettier = { require_cwd = true }
 
 -- Make gq use conform instead of the default formatexpr
 vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
@@ -48,7 +74,7 @@ vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
 
 -- Manual format (normal = whole file, visual = selection)
 vim.keymap.set({ 'n', 'v' }, '<leader>cf', function()
-  conform.format({ async = true, lsp_format = 'fallback' })
+  conform.format({ async = true })
 end, { desc = 'Format buffer / range' })
 
 -- Toggle format-on-save globally
