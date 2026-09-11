@@ -68,6 +68,43 @@ vim.lsp.handlers["textDocument/signatureHelp"] = function(err, result, ctx, conf
   }))
 end
 
+-- vim.lsp.buf records the tagstack entry only on its single-result path, and
+-- references never does at all -- so any jump that lands in the quickfix list
+-- leaves <C-t> with nothing to pop. Supplying on_list takes over result
+-- handling completely (vim.lsp.buf returns as soon as it has called us), so it
+-- has to cover both shapes: record the entry, then jump or list.
+local function tagstack_on_list()
+  -- Captured at keypress rather than inside the callback: on_list runs on the
+  -- async response, by which time the cursor may have moved off the symbol.
+  local win = vim.api.nvim_get_current_win()
+  local from = vim.fn.getpos(".")
+  from[1] = vim.api.nvim_get_current_buf()
+  local tagname = vim.fn.expand("<cword>")
+
+  return function(list)
+    vim.api.nvim_win_call(win, function()
+      vim.cmd("normal! m'") -- jumplist, for <C-o>
+    end)
+    vim.fn.settagstack(vim.fn.win_getid(win), {
+      items = { { tagname = tagname, from = from } },
+    }, "t")
+
+    if #list.items == 1 then
+      local item = list.items[1]
+      local b = item.bufnr or vim.fn.bufadd(item.filename)
+      vim.bo[b].buflisted = true
+      vim.api.nvim_win_set_buf(win, b)
+      vim.api.nvim_win_set_cursor(win, { item.lnum, item.col - 1 })
+      vim.api.nvim_win_call(win, function()
+        vim.cmd("normal! zv") -- open folds over the target
+      end)
+    else
+      vim.fn.setqflist({}, " ", { title = list.title, items = list.items })
+      vim.cmd("botright copen")
+    end
+  end
+end
+
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local buf = args.buf
@@ -79,14 +116,20 @@ vim.api.nvim_create_autocmd("LspAttach", {
     -- pickers run server results through defaults.file_ignore_patterns, where
     -- 'node_modules/' drops every hit in a dependency: gd reported "No LSP
     -- Definitions found" as though the server had returned nothing, and gr
-    -- quietly thinned the reference list with no indication it had. The vim
-    -- API pushes the tagstack and jumplist just as the pickers did, so
-    -- <C-t>/<C-o> are unaffected; multiple results open the quickfix list
-    -- instead of a fuzzy picker.
-    vim.keymap.set("n", "gd",    vim.lsp.buf.definition,      { buffer = buf, desc = "Go to definition" })
-    vim.keymap.set("n", "gi",    vim.lsp.buf.implementation,  { buffer = buf, desc = "Go to implementation" })
-    vim.keymap.set("n", "gr",    vim.lsp.buf.references,      { buffer = buf, desc = "Go to references" })
-    vim.keymap.set("n", "gD",    vim.lsp.buf.declaration,     { buffer = buf, desc = "Go to declaration" })
+    -- quietly thinned the reference list with no indication it had.
+    -- tagstack_on_list keeps <C-t> working whichever way the results land.
+    vim.keymap.set("n", "gd", function()
+      vim.lsp.buf.definition({ on_list = tagstack_on_list() })
+    end, { buffer = buf, desc = "Go to definition" })
+    vim.keymap.set("n", "gi", function()
+      vim.lsp.buf.implementation({ on_list = tagstack_on_list() })
+    end, { buffer = buf, desc = "Go to implementation" })
+    vim.keymap.set("n", "gr", function()
+      vim.lsp.buf.references(nil, { on_list = tagstack_on_list() })
+    end, { buffer = buf, desc = "Go to references" })
+    vim.keymap.set("n", "gD", function()
+      vim.lsp.buf.declaration({ on_list = tagstack_on_list() })
+    end, { buffer = buf, desc = "Go to declaration" })
 
     -- LspEslintFixAll is a buffer command created by eslint's own on_attach, so
     -- only bind it on buffers where eslint is the client that just attached.
