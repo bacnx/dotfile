@@ -71,15 +71,22 @@ end
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local buf = args.buf
-    local builtin = require("telescope.builtin")
     -- Hover lives on K, not <C-k>: a buffer-local <C-k> would shadow the global
     -- TmuxNavigateUp mapping in every LSP-attached buffer.
     vim.keymap.set("n", "K",        vim.lsp.buf.hover,           { buffer = buf, desc = "LSP hover" })
     vim.keymap.set("i", "<M-s>",    vim.lsp.buf.signature_help,  { buffer = buf, desc = "LSP signature help" })
-    vim.keymap.set("n", "gd",    builtin.lsp_definitions,     { buffer = buf, desc = "Go to definition" })
-    vim.keymap.set("n", "gi",    builtin.lsp_implementations,  { buffer = buf, desc = "Go to implementation" })
-    vim.keymap.set("n", "gr",    builtin.lsp_references,       { buffer = buf, desc = "Go to references" })
-    vim.keymap.set("n", "gD",    vim.lsp.buf.declaration,      { buffer = buf, desc = "Go to declaration" })
+    -- These four use the vim API rather than telescope's LSP pickers. Those
+    -- pickers run server results through defaults.file_ignore_patterns, where
+    -- 'node_modules/' drops every hit in a dependency: gd reported "No LSP
+    -- Definitions found" as though the server had returned nothing, and gr
+    -- quietly thinned the reference list with no indication it had. The vim
+    -- API pushes the tagstack and jumplist just as the pickers did, so
+    -- <C-t>/<C-o> are unaffected; multiple results open the quickfix list
+    -- instead of a fuzzy picker.
+    vim.keymap.set("n", "gd",    vim.lsp.buf.definition,      { buffer = buf, desc = "Go to definition" })
+    vim.keymap.set("n", "gi",    vim.lsp.buf.implementation,  { buffer = buf, desc = "Go to implementation" })
+    vim.keymap.set("n", "gr",    vim.lsp.buf.references,      { buffer = buf, desc = "Go to references" })
+    vim.keymap.set("n", "gD",    vim.lsp.buf.declaration,     { buffer = buf, desc = "Go to declaration" })
 
     -- LspEslintFixAll is a buffer command created by eslint's own on_attach, so
     -- only bind it on buffers where eslint is the client that just attached.
